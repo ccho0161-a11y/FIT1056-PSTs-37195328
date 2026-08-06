@@ -6,7 +6,7 @@ class Student:
     def __init__(self, student_id, name):
         self.id = student_id
         self.name = name
-        enrolled_in = []
+        self.enrolled_in = []
         
 
 class Teacher:
