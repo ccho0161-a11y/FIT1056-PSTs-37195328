@@ -5,6 +5,7 @@ def add_teacher(name, speciality):
     # TODO: Create a new Teacher object using the next available ID.
     new_teacher = Teacher(next_teacher_id, name, speciality)
     # TODO: Append the new_teacher to the teacher_db list.
+    teacher_db = []
     teacher_db.append(new_teacher)
     # TODO: Increment the next_teacher_id counter.
     next_teacher_id += 1
