@@ -17,12 +17,10 @@ def main():
         choice = input("Enter your choice: ")
 
         if choice == '1':
-            # TODO: Prompt for student name and instrument, then call front_desk_register.
             name = input("Enter student name: ")
             instrument = input("Enter instrument to enrol in: ")
             front_desk_register(name, instrument)
         elif choice == '2':
-            # TODO: Prompt for student ID (as an int) and instrument, then call front_desk_enrol.
             try:
                 student_id = int(input("Enter student ID: "))
                 instrument = input("Enter instrument to enrol in: ")
@@ -30,7 +28,6 @@ def main():
             except ValueError:
                 print("Invalid ID. Please enter a number.")
         elif choice == '3':
-            # TODO: Prompt for a search term, then call front_desk_lookup.
             term = input("Enter search term: ")
             front_desk_lookup(term)
         elif choice == '4':
