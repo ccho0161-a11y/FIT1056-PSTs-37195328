@@ -80,14 +80,27 @@ def update_student(student_id, **fields):
             return
     print(f"Error: Student with ID {student_id} not found.")
 
+def add_student(name, enrolled_in):
+    """Adds a student dictionary to the data store."""
+    student_id = app_data['next_student_id']
+    new_student = {"id": student_id, "name": name, "enrolled_in": enrolled_in}
+    app_data['students'].append(new_student)
+    app_data['next_student_id'] += 1
+    print(f"Core: Student '{name}' added.")
+
+
 # --- New Receptionist Features ---
 def check_in(student_id, course_id, timestamp=None):
     """Records a student's attendance for a course."""
+    student_exists = any(s['id'] == student_id for s in app_data['students'])
+    
+    if not student_exists:
+        print(f"Error: Student with ID {student_id} not found.")
+        return
+    
     if timestamp is None:
         timestamp = datetime.datetime.now().isoformat()
     
-    # TODO: Create a check-in record dictionary.
-    # It should contain 'student_id', 'course_id', and 'timestamp'.
     check_in_record = {
         "student_id": student_id,
         "course_id": course_id,
@@ -116,3 +129,91 @@ def print_student_card(student_id):
         print(f"Printed student card to {filename}.")
     else:
         print(f"Error: Could not print card, student {student_id} not found.")
+
+# --- Main Application Loop ---
+def main():
+    """Main function to run the MSMS application."""
+    load_data() # Load all data from file at startup.
+
+    while True:
+        print("\n===== MSMS v2 (Persistent) =====")
+        print("1. Check-in Student")
+        print("2. Print Student Card")
+        print("3. Update Teacher Info")
+        print("4. Remove Student")
+        print("5. Register New Student")
+        print("6. Add A Teacher")
+        print("q. Quit and Save")
+        
+        choice = input("Enter your choice: ")
+        
+        made_change = False # A flag to track if we need to save
+        if choice == '1':
+            try:
+                student_id = int(input("Enter student ID: "))
+                course_id = input("Enter course or instrument: ")
+                check_in(student_id, course_id)
+                made_change = True
+            except ValueError:
+                print("Invalid ID, please enter a number")
+        elif choice == '2':
+            try:
+                student_id = int(input("Enter student ID: "))
+                print_student_card(student_id)
+            except ValueError:
+                print("Invalid ID, please enter a number")
+        elif choice == '3':
+            try:
+                teacher_id = int(input("Enter teacher ID: "))
+                new_speciality = input("Enter new speciality (leave blank and press enter to skip): ")
+                new_name = input("Enter new name (leave blank and press enter to skip): ")
+                fields = {}
+                if new_name:
+                    fields["name"] = new_name
+                if new_speciality:
+                    fields["speciality"] = new_speciality
+                if fields:
+                    update_teacher(teacher_id, **fields)
+                    made_change = True
+                else:
+                    print("No changes made.")
+                    made_change = False
+            except ValueError:
+                print("Invalid ID, please enter a number")
+
+        elif choice == '4':
+            try:
+                student_id = int(input("Enter student ID: "))
+                remove_student(student_id)
+                made_change = True
+            except ValueError:
+                print("Invalid ID, please enter a number")
+
+        elif choice == '5':
+            #get studnet id and add student
+            name = input("Enter student name: ")
+            instrument = input("Enter instrument to enrol in: ")
+            add_student(name, [instrument])
+            made_change = True
+
+        elif choice == '6':
+            #get teacheer and add teacher
+            name = input("Enter teacher name: ")
+            speciality = input("Enter speciality: ")
+            add_teacher(name, speciality)
+            made_change = True
+
+        elif choice.lower() == 'q':
+            print("Saving final changes and exiting.")
+            break
+        else:
+            print("Invalid choice.")
+            
+        if made_change:
+            save_data() # Save the data immediately after any change.
+
+    save_data() # One final save on exit.
+
+# --- Program Start ---
+if __name__ == "__main__":
+    main()
