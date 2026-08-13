@@ -143,7 +143,10 @@ def main():
         print("4. Remove Student")
         print("5. Register New Student")
         print("6. Add A Teacher")
+<<<<<<< HEAD
         print("7. Update Student Info")
+=======
+>>>>>>> 566a686884bf670909fb0ed7a690df44cde0dbae
         print("q. Quit and Save")
         
         choice = input("Enter your choice: ")
@@ -204,6 +207,7 @@ def main():
             add_teacher(name, speciality)
             made_change = True
 
+<<<<<<< HEAD
         elif choice == '7':
             try:
                 student_id = int(input("Enter student ID: "))
@@ -222,6 +226,8 @@ def main():
             except ValueError:
                 print("Invalid ID, please enter a number")
 
+=======
+>>>>>>> 566a686884bf670909fb0ed7a690df44cde0dbae
         elif choice.lower() == 'q':
             print("Saving final changes and exiting.")
             break
