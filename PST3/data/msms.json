@@ -14,6 +14,13 @@
             "enrolled_course_ids": [
                 102
             ]
+        },
+        {
+            "id": 3,
+            "name": "Clary",
+            "enrolled_course_ids": [
+                101
+            ]
         }
     ],
     "teachers": [
@@ -35,7 +42,8 @@
             "instrument": "Piano",
             "teacher_id": 1,
             "enrolled_student_ids": [
-                1
+                1,
+                3
             ],
             "lessons": [
                 {

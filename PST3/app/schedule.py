@@ -1,10 +1,15 @@
 import json
+import datetime
 from app.student import StudentUser
 from app.teacher import TeacherUser, Course
+import os
 
 class ScheduleManager:
     """The main controller for all business logic and data handling."""
-    def __init__(self, data_path="data/msms.json"):
+    def __init__(self, data_path=None):
+        if data_path is None:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            data_path = os.path.join(base_dir, "..", "data", "msms.json")
         self.data_path = data_path
         self.students = []
         self.teachers = []
@@ -46,3 +51,195 @@ class ScheduleManager:
         }
         with open(self.data_path, 'w') as f:
             json.dump(data_to_save, f, indent=4)
+    
+    def check_in(self, student_id, course_id):
+        """Records a student's attendance for a course after validation."""
+        if not isinstance(student_id, int) or not isinstance(course_id, int):
+            print("Error: Check-in failed. Student and Course IDs must be numbers.")
+            return False
+        
+        student = self.find_student_by_id(student_id)
+        course = self.find_course_by_id(course_id)
+        
+        if not student or not course:
+            print("Error: Check-in failed. Invalid Student or Course ID.")
+            return False
+            
+        timestamp = datetime.datetime.now().isoformat()
+        check_in_record = {"student_id": student_id, "course_id": course_id, "timestamp": timestamp}
+        
+        self.attendance_log.append(check_in_record)
+        self._save_data() # This will now correctly save the attendance log.
+        print(f"Success: Student {student.name} checked into {course.name}.")
+        return True
+
+    def find_student_by_id(self, student_id):
+        """Finds a student by their ID"""
+        for student in self.students:
+            if student.id == student_id:
+                return student
+        return None
+
+    def find_course_by_id(self, course_id):
+        """Finds a course by its ID"""
+        for course in self.courses:
+            if course.id == course_id:
+                return course
+        return None
+    
+    def find_teacher_by_id(self, teacher_id):
+        """Finds a teacher by their ID."""
+        for teacher in self.teachers:
+            if teacher.id == teacher_id:
+                return teacher
+        return None
+
+    def getting_daily_lessons(self, day):
+        """Returns a list of course and lesson pairs if they are scheduled for the day"""
+        daily_lessons = []
+        for course in self.courses:
+            for lesson in course.lessons:
+                if lesson['day'].lower() == day.lower():
+                    daily_lessons.append((course, lesson))
+        return daily_lessons
+
+    def switch_student_course(self, student_id, from_course_id, to_course_id):
+        """Moves a student from one course to another"""
+        student = self.find_student_by_id(student_id)
+        from_course = self.find_course_by_id(from_course_id)
+        to_course = self.find_course_by_id(to_course_id)
+    
+        if not student:
+            print("Error: Switch failed, reason: invalid student ID.")
+            return False
+            
+        if not from_course or not to_course:
+            print("Error: Switch failed, reason: invalid course ID.")
+            return False
+        
+        if from_course_id not in student.enrolled_course_ids:
+            print(f"Error: Student{student.name} is not enrolled in {from_course.name}.")
+            return False
+        
+        student.enrolled_course_ids.remove(from_course_id)
+        student.enrolled_course_ids.append(to_course_id)
+        
+        from_course.enrolled_student_ids.remove(student_id)
+        to_course.enrolled_student_ids.append(student_id)
+        
+        self._save_data()
+        print(F"{student.name} has been successfully switched from {from_course.name} to {to_course.name}.")
+        return True
+
+    def add_student(self):
+        """Enrols a student with optional course enrollment"""
+        if self.students:
+            student_id = self.students[-1].id + 1
+        else:
+            student_id = 1
+        
+        student_name = input("Enter student name: ")
+        while student_name == "":
+            print("Student name cannot be blank")
+            student_name = input("Enter student name: ")
+
+        new_student = StudentUser(student_id, student_name)
+        self.students.append(new_student)
+        
+        course_input = input("Enter course ID to enrol in now (press enter to skip): ")
+        if course_input != "":
+            try:
+                course_id = int(course_input)
+                course = self.find_course_by_id(course_id)
+                if course:
+                    new_student.enrolled_course_ids.append(course_id)
+                    course.enrolled_student_ids.append(student_id)
+                    print(f"Enrolled in {course.name}.")
+                else:
+                    print(f"No course found with ID {course_id}. Student added with no courses.")
+            except ValueError:
+                print("Invalid course ID entered. Student added with no courses.")
+
+        self._save_data()
+        print(f"The student '{student_name}' has been added with ID {student_id}.")
+        return new_student
+
+    def list_students(self):
+        """Prints all students and their enrolled courses."""
+        if not self.students:
+            print("No students found")
+            return
+        for student in self.students:
+            print(f"ID: {student.id}, Name: {student.name}, Enrolled in: {student.enrolled_course_ids}")
+
+    def list_teachers(self):
+        """Prints all teachers and their speciality."""
+        if not self.teachers:
+            print("No teachers found")
+            return
+        for teacher in self.teachers:
+            print(f"ID: {teacher.id}, Name: {teacher.name}, Speciailitie(s) : {teacher.speciality}")
+
+    def update_student(self):
+        """Updates an existing student's details"""
+        try:
+            student_id = int(input("Enter student ID: "))
+        except ValueError:
+            print("Invalid ID. Please enter a number.")
+            return
+
+        student = self.find_student_by_id(student_id)
+        if not student:
+            print("Error: student with that ID is not found.")
+            return
+        
+        new_name = input("Enter new name (leave blank to skip): ")
+        if new_name != "":
+            student.name = new_name
+
+        self._save_data()
+        print(f"Success: Student {student_id} updated.")
+
+    def update_teacher(self):
+        """Updates an existing teacher's details."""
+        try:
+            teacher_id = int(input("Enter teacher ID: "))
+        except ValueError:
+            print("Invalid ID. Please enter a number.")
+            return
+
+        teacher = self.find_teacher_by_id(teacher_id)
+        if not teacher:
+            print(f"Error: Teacher with ID {teacher_id} not found.")
+            return
+
+        new_name = input("Enter new name (leave blank to skip): ")
+        if new_name != "":
+            teacher.name = new_name
+
+        new_speciality = input("Enter new speciality (leave blank to skip): ")
+        if new_speciality != "":
+            teacher.speciality = new_speciality
+
+        self._save_data()
+        print(f"Success: Teacher {teacher_id} updated.")
+
+    def enrol_student_in_course(self, student_id, course_id):
+        """Enrols an existing student into a course."""
+        student = self.find_student_by_id(student_id)
+        course = self.find_course_by_id(course_id)
+
+        if not student or not course:
+            print("Error: Enrolment failed. Invalid student or course ID.")
+            return False
+
+        if course_id in student.enrolled_course_ids:
+            print(f"Error: {student.name} is already enrolled in {course.name}.")
+            return False
+
+        student.enrolled_course_ids.append(course_id)
+        course.enrolled_student_ids.append(student_id)
+
+        self._save_data()
+        print(f"Success: {student.name} enrolled in {course.name}.")
+        return True

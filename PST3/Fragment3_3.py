@@ -4,6 +4,10 @@ import datetime
 def check_in(self, student_id, course_id):
     """Records a student's attendance for a course after validation."""
     # This implementation remains the same, but it will now function correctly.
+    if not isinstance(student_id, int) or not isinstance(course_id, int):
+        print("Error: Check-in failed. Student and Course IDs must be numbers.")
+        return False
+    
     student = self.find_student_by_id(student_id)
     course = self.find_course_by_id(course_id)
     
@@ -20,4 +24,16 @@ def check_in(self, student_id, course_id):
     print(f"Success: Student {student.name} checked into {course.name}.")
     return True
 
-# TODO: Also implement find_student_by_id and find_course_by_id helper methods.
+def find_student_by_id(self, student_id):
+    """Finds a student by their ID"""
+    for student in self.students:
+        if student.id == student_id:
+            return student
+    return None
+
+def find_course_by_id(self, course_id):
+    """Finds a course by its ID"""
+    for course in self.courses:
+        if course.id == course_id:
+            return course
+    return None
