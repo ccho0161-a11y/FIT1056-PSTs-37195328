@@ -9,9 +9,7 @@ class ScheduleManager:
         self.students = []
         self.teachers = []
         self.courses = []
-        # TODO: Initialize the new attendance_log attribute as an empty list.
         self.attendance_log = []
-        # ... (next_id counters) ...
         self._load_data()
 
     def _load_data(self):
@@ -19,27 +17,32 @@ class ScheduleManager:
         try:
             with open(self.data_path, 'r') as f:
                 data = json.load(f)
-                # TODO: Load students, teachers, and courses as before.
-                # ...
+                self.students = []
+                for s in data.get("students", []):
+                    student = StudentUser(s['id'], s['name'])
+                    student.enrolled_course_ids = s.get('enrolled_course_ids', [])
+                    self.students.append(student)
 
-                # TODO: Correctly load the attendance log.
-                # Use .get() with a default empty list to prevent errors if the key doesn't exist.
+                self.courses = []
+                for c in data.get("courses", []):
+                    course = Course(c['id'], c['name'], c['instrument'], c['teacher_id'])
+                    course.enrolled_student_ids = c.get('enrolled_student_ids', [])
+                    course.lessons = c.get('lessons', [])
+                    self.courses.append(course)
+                self.teachers = [
+                    TeacherUser(t['id'], t['name'], t['speciality']) for t in data.get("teachers", [])
+                ]
                 self.attendance_log = data.get("attendance", [])
         except FileNotFoundError:
             print("Data file not found. Starting with a clean state.")
     
     def _save_data(self):
         """Converts object lists back to dictionaries and saves to JSON."""
-        # TODO: Create a 'data_to_save' dictionary.
         data_to_save = {
             "students": [s.__dict__ for s in self.students],
             "teachers": [t.__dict__ for t in self.teachers],
             "courses": [c.__dict__ for c in self.courses],
-            # TODO: Add the attendance_log to the dictionary to be saved.
-            # Since it's already a list of dicts, no conversion is needed.
             "attendance": self.attendance_log,
-            # ... (next_id counters) ...
         }
-        # TODO: Write 'data_to_save' to the JSON file.
         with open(self.data_path, 'w') as f:
             json.dump(data_to_save, f, indent=4)
