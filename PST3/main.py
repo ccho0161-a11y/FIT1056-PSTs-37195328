@@ -22,13 +22,11 @@ def switch_course(manager, student_id, from_course_id, to_course_id):
 
 def main():
     """Main function to run the MSMS application."""
-    manager = ScheduleManager() # Create ONE instance of the application brain.
+    manager = ScheduleManager() 
     print(f"DEBUG: Loaded {len(manager.courses)} courses, {len(manager.students)} students.")
     
     while True:
         print("\n===== MSMS v3 (Object-Oriented) =====")
-        # TODO: Create a menu for the new PST3 functions.
-        # Get user input and call the appropriate view function, passing 'manager' to it.
         print("1. Daily lessons")
         print("2. Switch a class")
         print("3. Add a student")
@@ -38,6 +36,7 @@ def main():
         print("7. Update teacher information")
         print("8. Check in a student")
         print("9. Add a student to a class")
+        print("10. Search for student or teacher")
         print("q. Quit")
         choice = input("Enter choice: ")
         if choice == '1':
@@ -81,6 +80,13 @@ def main():
                 manager.enrol_student_in_course(student_id, course_id)
             except ValueError:
                 print("Invalid ID. Please enter a number.")
+        elif choice == '10':
+            search_type = input("Search by (name/id/course): ").strip().lower()
+            if search_type not in ('name', 'id', 'course'):
+                print("Invalid search type.")
+            else:
+                term = input(f"Enter {search_type} to search for: ")
+                manager.search_database(search_type, term)
         elif choice.lower() == 'q':
             break
         else:

@@ -69,7 +69,7 @@ class ScheduleManager:
         check_in_record = {"student_id": student_id, "course_id": course_id, "timestamp": timestamp}
         
         self.attendance_log.append(check_in_record)
-        self._save_data() # This will now correctly save the attendance log.
+        self._save_data()
         print(f"Success: Student {student.name} checked into {course.name}.")
         return True
 
@@ -243,3 +243,53 @@ class ScheduleManager:
         self._save_data()
         print(f"Success: {student.name} enrolled in {course.name}.")
         return True
+
+    def search_database(self, search_type, term):
+        """Searches database universally (for student or teacher) by name, ID or enrolled course/speciality"""
+        results = []
+
+        if search_type == 'name':
+            for student in self.students:
+                if term.lower() in student.name.lower():
+                    course_names = [self.find_course_by_id(cid).name for cid in student.enrolled_course_ids if self.find_course_by_id(cid)]
+                    results.append(f"Student - ID: {student.id}, Name: {student.name}, Enrolled in: {course_names}")
+            for teacher in self.teachers:
+                if term.lower() in teacher.name.lower():
+                    results.append(f"Teacher - ID: {teacher.id}, Name: {teacher.name}, Speciality: {teacher.speciality}")
+        elif search_type == 'id':
+            try:
+                search_id = int(term)
+            except ValueError:
+                print("Invalid ID. Please enter a number.")
+                return
+            student = self.find_student_by_id(search_id)
+            if student:
+                course_names = [self.find_course_by_id(cid).name for cid in student.enrolled_course_ids if self.find_course_by_id(cid)]
+                results.append(f"Student - ID: {student.id}, Name: {student.name}, Enrolled in: {course_names}")
+            teacher = self.find_teacher_by_id(search_id)
+            if teacher:
+                results.append(f"Teacher - ID: {teacher.id}, Name: {teacher.name}, Speciality: {teacher.speciality}")
+        elif search_type == 'course':
+            course = None
+            for c in self.courses:
+                if term.lower() in c.name.lower():
+                    course = c
+                    break
+                if not course:
+                    print(f"No course matches {term}")
+                    return
+                for student_id in course.enrolled_student_ids:
+                    student = self.find_student_by_id(student_id)
+                    if student:
+                        course_names = [self.find_course_by_id(cid).name for cid in student.enrolled_course_ids if self.find_course_by_id(cid)]
+                    results.append(f"Student - ID: {student.id}, Name: {student.name}, Enrolled in: {course_names}")
+                teacher = self.find_teacher_by_id(course.teacher_id)
+                if teacher:
+                    results.append(f"Teacher - ID: {teacher.id}, Name: {teacher.name}, Speciality: {teacher.speciality}")
+
+        if not results:
+            print("No matches found.")
+        else:
+            print(f"\n--- Search results ---")
+            for r in results:
+                print(f"  {r}")
