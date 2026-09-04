@@ -293,7 +293,7 @@ class ScheduleManager:
             print(f"\n--- Search results ---")
             for r in results:
                 print(f"  {r}")
-                
+
     def add_teacher(self):
         """Adds a new teacher to the system."""
         if self.teachers:
@@ -317,3 +317,72 @@ class ScheduleManager:
         self._save_data()
         print(f"The teacher '{teacher_name}' has been added with ID {teacher_id}.")
         return new_teacher
+
+    def remove_student(self):
+        """Removes a student and cleans up their course enrollments."""
+        try:
+            student_id = int(input("Enter student ID: "))
+        except ValueError:
+            print("Invalid ID. Please enter a number.")
+            return
+
+        student = self.find_student_by_id(student_id)
+        if not student:
+            print(f"Error: Student with ID {student_id} not found.")
+            return
+
+        for course_id in student.enrolled_course_ids:
+            course = self.find_course_by_id(course_id)
+            if course and student_id in course.enrolled_student_ids:
+                course.enrolled_student_ids.remove(student_id)
+
+        self.students.remove(student)
+        self._save_data()
+        print(f"Success: Student '{student.name}' has been removed.")
+    def remove_teacher(self):
+        """Removes a teacher, blocked if they still have courses assigned."""
+        try:
+            teacher_id = int(input("Enter teacher ID: "))
+        except ValueError:
+            print("Invalid ID. Please enter a number.")
+            return
+
+        teacher = self.find_teacher_by_id(teacher_id)
+        if not teacher:
+            print(f"Error: Teacher with ID {teacher_id} not found.")
+            return
+
+        assigned_courses = [course for course in self.courses if course.teacher_id == teacher_id]
+        if assigned_courses:
+            course_names = [course.name for course in assigned_courses]
+            print(f"Error: Cannot remove '{teacher.name}' — they are still assigned course(s): {course_names}. Reassign or remove these courses first.")
+            return
+
+        self.teachers.remove(teacher)
+        self._save_data()
+        print(f"Success: Teacher '{teacher.name}' has been removed.")
+
+    def print_student_card(self):
+        """Creates a text file badge for a student."""
+        try:
+            student_id = int(input("Enter student ID: "))
+        except ValueError:
+            print("Invalid ID. Please enter a number.")
+            return
+
+        student = self.find_student_by_id(student_id)
+        if not student:
+            print(f"Error: Could not print card, student {student_id} not found.")
+            return
+
+        course_names = [self.find_course_by_id(cid).name for cid in student.enrolled_course_ids if self.find_course_by_id(cid)]
+
+        filename = f"{student_id}_card.txt"
+        with open(filename, 'w') as f:
+            f.write("========================\n")  
+            f.write(f"  MUSIC SCHOOL ID BADGE\n")
+            f.write("========================\n")
+            f.write(f"ID: {student.id}\n")
+            f.write(f"Name: {student.name}\n")
+            f.write(f"Enrolled In: {', '.join(course_names)}\n")
+        print(f"Printed student card to {filename}.")

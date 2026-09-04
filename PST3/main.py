@@ -42,6 +42,9 @@ def main():
         print("9. Add a student to a class")
         print("10. Search for student or teacher")
         print("11. Add a teacher")
+        print("12. Remove a student")
+        print("13. Remove a teacher")
+        print("14. Print student card")
         print("q. Quit")
         choice = input("Enter choice: ")
         if choice == '1':
@@ -94,6 +97,12 @@ def main():
                 manager.search_database(search_type, term)
         elif choice == '11':
             manager.add_teacher()
+        elif choice == '12':
+            manager.remove_student()
+        elif choice == '13':
+            manager.remove_teacher()
+        elif choice == '14':
+            manager.print_student_card()
         elif choice.lower() == 'q':
             break
         else:

@@ -106,11 +106,17 @@ Features:
         > 'switch_student_course' moves a student from one class to another
         > 'check_in' records a student's attendance for a course (will reject invalid IDs)
         > 'update_student' and 'update_teacher' changes an existing record's name and speciality (for teachers only)
+        > 'add_teacher' registers a new teacher with name and speciality
+        > 'remove_student' removes a student, cleaning up their enrollment from every course they were in
+        > 'remove_teacher' removes a teacher, blocked with an error if they still have courses assigned
+        > 'print_student_card' writes a formatted .txt file, showing the student's ID, name, and enrolled course names
 
     Main menu:
         > Allows the user to add, search for and enrol students as well as adding and searching for teachers. 
         > Lists of all students and teachers can be printed. 
         > Supports checking students in, switching them between courses and viewing the daily lesson roster for any day of the week.
+        > Allows for the removal for students and teachers
+        > Prints a student card in to a .txt file
 
 How to test:
     1. Register a new student (enrolling in to a class optional)
@@ -122,6 +128,10 @@ How to test:
     7. Update the student's name and the teacher's speciality
     8. Enter an invalid day (e.g. "Tues") into the daily roster search and confirm the error exists
     9. Restart the program and check everything has been saved and updated correctly
+    10. Attempt to remove a teacher while they still have a course assigned, confirm the error explains why it is blocked
+    11. Remove the course's teacher assignment (or the course), then remove the teacher again, confirm it now succeeds
+    12. Remove a student who is enrolled in at least one course, then check that course's enrolled student list no longer includes them
+    13. Print a student's card, open the resulting .txt file, and confirm it lists their enrolled course names correctly
 
 Design choices/assumptions
     > Added 'add_student', 'add_teacher', 'list_students', 'list_teachers' and 'search_database' to make the program fully useable
