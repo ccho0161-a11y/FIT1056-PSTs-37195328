@@ -3,6 +3,10 @@ from app.schedule import ScheduleManager
 
 def front_desk_daily_roster(manager, day):
     """Displays a pretty table of all lessons on a given day."""
+    valid_days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    if day.lower() not in valid_days:
+        print(f"Error: '{day}' is not a valid day. Valid days are: Monday, Tuesday, Wednesday, Thursday and Friday.")
+        return
     print(f"\n--- Daily Roster for {day} ---")
     day_lessons = manager.getting_daily_lessons(day)
 
@@ -37,6 +41,7 @@ def main():
         print("8. Check in a student")
         print("9. Add a student to a class")
         print("10. Search for student or teacher")
+        print("11. Add a teacher")
         print("q. Quit")
         choice = input("Enter choice: ")
         if choice == '1':
@@ -87,6 +92,8 @@ def main():
             else:
                 term = input(f"Enter {search_type} to search for: ")
                 manager.search_database(search_type, term)
+        elif choice == '11':
+            manager.add_teacher()
         elif choice.lower() == 'q':
             break
         else:

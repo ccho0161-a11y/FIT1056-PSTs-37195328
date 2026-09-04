@@ -293,3 +293,27 @@ class ScheduleManager:
             print(f"\n--- Search results ---")
             for r in results:
                 print(f"  {r}")
+                
+    def add_teacher(self):
+        """Adds a new teacher to the system."""
+        if self.teachers:
+            teacher_id = self.teachers[-1].id + 1
+        else:
+            teacher_id = 1
+
+        teacher_name = input("Enter teacher name: ")
+        while teacher_name == "":
+            print("Teacher name cannot be blank")
+            teacher_name = input("Enter teacher name: ")
+
+        speciality = input("Enter teacher's speciality: ")
+        while speciality == "":
+            print("Speciality cannot be blank")
+            speciality = input("Enter teacher's speciality: ")
+
+        new_teacher = TeacherUser(teacher_id, teacher_name, speciality)
+        self.teachers.append(new_teacher)
+
+        self._save_data()
+        print(f"The teacher '{teacher_name}' has been added with ID {teacher_id}.")
+        return new_teacher

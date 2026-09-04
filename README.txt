@@ -77,3 +77,54 @@ Design choices/assumptions:
     > "check_in" ensures there is a student that exists under the ID before allowing them to be checked in 
     > "update_student" was given a menu option so their data can be edited easily like the teachers' data
     > The assignation of IDs are automated and does not allow the user to create one for a student or teacher
+
+=========================================================================================================================================================================================
+PST3: The Architecture
+
+Purpose:
+    Introduces the use of classes to PST2 rather than dictionary based data. The base class 'User' is used by classes 'StudentUser and 'TeacherUser'.
+    'Schedule' is a manager that has saved all the functions and is used to call them in the 'main' program.
+
+How to run:
+    1. Preferably have Python 3.14.6 installed (Python 3 is also acceptable)
+    2. Run the file "main.py"
+    3. Interact with the menu in the terminal 
+
+Features:
+    Data models:
+        > 'User' is the base class that stores name and ID (used by students and teachers)
+        > 'StudentUser' inherits from 'User' and allows for enrolled_course_ids to store which courses the student is in
+        > 'TeacherUser' inherits from 'User' and allows for their speciality to be added as well
+        > 'Course' is the scaffold for a course's information and includes all the studnet information as well as the teacher, course ID, instrument and lessons
+    Core helper functions:
+        > 'find_student_by_id', 'find_course_by_id' and 'find_teacher_by_id' searches in the database by ID and returns None if nothing is found
+        > 'getting_daily_lessons' searches the courses for lessons on a given day according to user input
+        > 'search_database' is a universal search for students and teachers filtered by ID, name or course
+    Front desk functions:
+        > 'add_student' registers a new student, enrollment into a course is optional
+        > 'enrol_student_in_course' adds an existing student to a course, doesn't allow duplicate enrolments
+        > 'switch_student_course' moves a student from one class to another
+        > 'check_in' records a student's attendance for a course (will reject invalid IDs)
+        > 'update_student' and 'update_teacher' changes an existing record's name and speciality (for teachers only)
+
+    Main menu:
+        > Allows the user to add, search for and enrol students as well as adding and searching for teachers. 
+        > Lists of all students and teachers can be printed. 
+        > Supports checking students in, switching them between courses and viewing the daily lesson roster for any day of the week.
+
+How to test:
+    1. Register a new student (enrolling in to a class optional)
+    2. Register a new teacher
+    3. Check a student into their course
+    4. View the daily roster for today's lessons
+    5. Switch the course the student is in (confirm both the old and new course's enrolled lists updated)
+    6. Search for the student by name, ID and course
+    7. Update the student's name and the teacher's speciality
+    8. Enter an invalid day (e.g. "Tues") into the daily roster search and confirm the error exists
+    9. Restart the program and check everything has been saved and updated correctly
+
+Design choices/assumptions
+    > Added 'add_student', 'add_teacher', 'list_students', 'list_teachers' and 'search_database' to make the program fully useable
+    > 'ScheduleManager' finds the json file using the module's own file location so the app works correctly regardless of the termina's working directory
+    > 'switch_student_course' and 'enrol_student_in_course' update both sides of the studnet-course relationship together to keep the data consistent
+    > Daily roster search ensures the day entered is valid, distinguising between a typo and a day without lessons
