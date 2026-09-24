@@ -14,6 +14,13 @@
             "enrolled_course_ids": [
                 102
             ]
+        },
+        {
+            "id": 3,
+            "name": "Clarissa",
+            "enrolled_course_ids": [
+                102
+            ]
         }
     ],
     "teachers": [
@@ -26,6 +33,11 @@
             "id": 2,
             "name": "Mr. David Fret",
             "speciality": "Guitar"
+        },
+        {
+            "id": 3,
+            "name": "David Mowat",
+            "speciality": "Violin"
         }
     ],
     "courses": [
@@ -58,7 +70,8 @@
             "instrument": "Guitar",
             "teacher_id": 2,
             "enrolled_student_ids": [
-                2
+                2,
+                3
             ],
             "lessons": [
                 {
