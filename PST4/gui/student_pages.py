@@ -5,26 +5,6 @@ def show_student_management_page(manager):
     """Renders all components for the student management page."""
     st.header("Student Management")
 
-     # --- Search Section ---
-    st.subheader("Find a Student")
-    with st.form("search_form"):
-        search_type = st.selectbox("Search by", ["Name", "ID", "Course"])
-        search_term = st.text_input("Search term")
-        search_submitted = st.form_submit_button("Search")
- 
-        if search_submitted:
-            if search_term.strip():
-                results = manager.search_database(search_type, search_term.strip())
-                if results:
-                    for r in results:
-                        st.write(r)
-                else:
-                    st.info("No matches found.")
-            else:
-                st.warning("Please enter a search term.")
- 
-    st.divider()
-
     # --- Registration Section (now works correctly) ---
     st.subheader("Register New Student")
     with st.form("registration_form"):
@@ -134,6 +114,7 @@ def show_student_management_page(manager):
     st.subheader("All Students")
     students = manager.list_students()
     if students:
+        students = sorted(students, key=lambda s: s['id'])
         for s in students:
             st.write(f"**ID {s['id']}** — {s['name']} — Enrolled in: {', '.join(s['enrolled_in']) or 'None'}")
     else:

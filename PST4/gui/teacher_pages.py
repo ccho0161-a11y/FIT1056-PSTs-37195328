@@ -58,8 +58,10 @@ def show_teacher_management_page(manager):
     # --- List All Teachers ---
     st.subheader("All Teachers")
     teachers = manager.list_teachers()
-    for t in teachers:
-        st.write(f"**ID {t['id']}** — {t['name']} — Speciality: {t['speciality']}")
+    if teachers:
+        teachers = sorted(teachers, key=lambda t: t['id'])
+        for t in teachers:
+            st.write(f"**ID {t['id']}** — {t['name']} — Speciality: {t['speciality']}")
     else:
         st.info("No teachers registered yet.")
 
@@ -84,3 +86,14 @@ def show_teacher_management_page(manager):
                     st.error(result)
             else:
                 st.warning("Please enter both a course name and instrument.")
+
+    st.divider()
+
+    # --- List All Courses ---
+    st.subheader("All Courses")
+    courses = manager.list_courses()
+    if courses:
+        for c in courses:
+            st.write(f"**ID {c['id']}** — {c['name']} — Instrument: {c['instrument']}")
+    else:
+        st.info("No courses registered yet.")

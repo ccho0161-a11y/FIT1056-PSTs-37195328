@@ -4,6 +4,7 @@ from app.schedule import ScheduleManager
 from gui.student_pages import show_student_management_page
 from gui.teacher_pages import show_teacher_management_page
 from gui.roster_pages import show_roster_page
+from gui.search_pages import show_search_page
 
 def launch():
     """Sets up the main Streamlit application window and navigation."""
@@ -16,10 +17,12 @@ def launch():
 
     st.sidebar.title("MSMS Navigation")
     # Create a radio button menu in the sidebar for page navigation.
-    page = st.sidebar.radio("Go to", ["Student Management", "Teacher Management", "Daily Roster", "Payments (stub)"])
+    page = st.sidebar.radio("Go to", ["Search", "Student Management", "Teacher Management", "Daily Roster", "Payments (stub)"])
 
     # Use an if/elif block to call the correct function to render the selected page.
-    if page == "Student Management":
+    if page == "Search":
+        show_search_page(st.session_state.manager)
+    elif page == "Student Management":
         show_student_management_page(st.session_state.manager)
     elif page == "Teacher Management":
         show_teacher_management_page(st.session_state.manager)

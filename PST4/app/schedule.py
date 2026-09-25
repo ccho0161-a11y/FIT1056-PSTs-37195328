@@ -2,6 +2,7 @@ import json
 from app.student import StudentUser
 # Corrected Import: TeacherUser and Course now come from the same file.
 from app.teacher import TeacherUser, Course
+import datetime
 
 class ScheduleManager:
     """The main controller for all business logic and data handling."""
@@ -91,27 +92,36 @@ class ScheduleManager:
                 if lesson['day'].lower() == day.lower():
                     daily_lessons.append((course, lesson))
         return daily_lessons
+
+    """ID sorting"""
+    def _get_next_available_id(self, items):
+        """Finds the lowest positive integer ID not currently in use."""
+        existing_ids = sorted(item.id for item in items)
+        next_id = 1
+        for eid in existing_ids:
+            if eid == next_id:
+                next_id += 1
+            elif eid > next_id:
+                break
+        return next_id
     
     """Student related stuff"""
     def register_new_student(self, name, instrument):
-            """Enrols a student via the GUI (Streamlit) with instrument-based matching"""
-            if self.students:
-                student_id = self.students[-1].id + 1
-            else:
-                student_id = 1
-            new_student = StudentUser(student_id, name)
-            self.students.append(new_student)
+        """Enrols a student via the GUI (Streamlit) with instrument-based matching"""
+        student_id = self._get_next_available_id(self.students)
+        new_student = StudentUser(student_id, name)
+        self.students.append(new_student)
+
+        course = self.find_course_by_instrument(instrument)
+        if course:
+            new_student.enrolled_course_ids.append(course.id)
+            course.enrolled_student_ids.append(student_id)
+        else:
+            self.students.remove(new_student)
+            return None
     
-            course = self.find_course_by_instrument(instrument)
-            if course:
-                new_student.enrolled_course_ids.append(course.id)
-                course.enrolled_student_ids.append(student_id)
-            else:
-                self.students.remove(new_student)
-                return None
-    
-            self._save_data()
-            return new_student
+        self._save_data()
+        return new_student
     
     def find_course_by_instrument(self, instrument):
         """Finds a course matching the given instrument. Returns None if no matching course exists."""
@@ -231,10 +241,7 @@ class ScheduleManager:
     """Teacher stuff"""
     def register_new_teacher(self, name, speciality):
         """Adds a new teacher to the system. Returns the new TeacherUser."""
-        if self.teachers:
-            teacher_id = self.teachers[-1].id + 1
-        else:
-            teacher_id = 1
+        teacher_id = self._get_next_available_id(self.teachers)
 
         new_teacher = TeacherUser(teacher_id, name, speciality)
         self.teachers.append(new_teacher)
@@ -362,11 +369,7 @@ class ScheduleManager:
         if not teacher:
             return False, f"No teacher found with ID {teacher_id}."
 
-        if self.courses:
-            course_id = self.courses[-1].id + 1
-        else:
-            course_id = 1
-
+        course_id = self._get_next_available_id(self.courses)
         new_course = Course(course_id, name, instrument, teacher_id)
         new_course.enrolled_student_ids = []
         new_course.lessons = []
@@ -374,3 +377,72 @@ class ScheduleManager:
 
         self._save_data()
         return True, new_course
+
+    def list_courses(self):
+        """Returns a list of dicts describing each course, sorted by ID."""
+        return [
+            {"id": c.id, "name": c.name, "instrument": c.instrument}
+            for c in sorted(self.courses, key=lambda c: c.id)
+        ]
+
+    def check_in(self, student_id, course_id):
+        """Records a student's attendance for a course, only if they're enrolled.
+        Returns (True, message) on success, or (False, message) on failure."""
+        if not isinstance(student_id, int) or not isinstance(course_id, int):
+            return False, "Check-in failed. Student and Course IDs must be numbers."
+
+        student = self.find_student_by_id(student_id)
+        course = self.find_course_by_id(course_id)
+
+        if not student or not course:
+            return False, "Check-in failed. Invalid Student or Course ID."
+
+        if course_id not in student.enrolled_course_ids:
+            return False, f"{student.name} is not enrolled in {course.name}."
+
+        timestamp = datetime.datetime.now().isoformat()
+        self.attendance_log.append({
+            "student_id": student_id,
+            "course_id": course_id,
+            "timestamp": timestamp,
+        })
+        self._save_data()
+        return True, f"Student {student.name} checked into {course.name}."
+
+    def schedule_lesson(self, course_id, day, start_time, room):
+        """Adds a new lesson to an existing course.
+        Returns (True, lesson) on success, or (False, message) on failure."""
+        course = self.find_course_by_id(course_id)
+        if not course:
+            return False, f"No course found with ID {course_id}."
+
+        # Check every existing lesson across all courses for a clash
+        for c in self.courses:
+            for lesson in c.lessons:
+                if (
+                    lesson['day'].lower() == day.lower()
+                    and lesson['start_time'] == start_time
+                    and lesson['room'].lower() == room.lower()
+                ):
+                    return False, (
+                        f"Room clash: {c.name} already has a lesson in {room} "
+                        f"on {day} at {start_time}."
+                    )
+
+        all_lesson_ids = [
+            lesson['lesson_id']
+            for c in self.courses
+            for lesson in c.lessons
+        ]
+        next_lesson_id = (max(all_lesson_ids) + 1) if all_lesson_ids else 1
+
+        new_lesson = {
+            "lesson_id": next_lesson_id,
+            "day": day,
+            "start_time": start_time,
+            "room": room,
+        }
+        course.lessons.append(new_lesson)
+
+        self._save_data()
+        return True, new_lesson
